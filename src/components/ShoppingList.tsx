@@ -1,11 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-
-interface Meal {
-  idMeal: string;
-  strMeal: string;
-  [key: string]: string;
-}
+// ✅ Use the SAME Meal type everywhere to avoid TS identity mismatches
+import type { Meal } from '../services/mealApi';
 
 interface ShoppingListProps {
   meals: Meal[];
@@ -14,21 +10,22 @@ interface ShoppingListProps {
 export default function ShoppingList({ meals }: ShoppingListProps) {
   const getAllIngredients = () => {
     const ingredients = new Set<string>();
-    
-    meals.forEach(meal => {
+
+    meals.forEach((meal) => {
       for (let i = 1; i <= 20; i++) {
-        const ingredient = meal[`strIngredient${i}`];
-        const measure = meal[`strMeasure${i}`];
-        
-        if (ingredient && ingredient.trim()) {
-          const fullIngredient = measure && measure.trim() 
-            ? `${measure.trim()} ${ingredient.trim()}`
-            : ingredient.trim();
+        // Dynamic fields can be undefined/null from the API → safely coalesce
+        const ingredient =
+          ((meal as any)[`strIngredient${i}`] as string | undefined)?.trim() ?? '';
+        const measure =
+          ((meal as any)[`strMeasure${i}`] as string | undefined)?.trim() ?? '';
+
+        if (ingredient) {
+          const fullIngredient = measure ? `${measure} ${ingredient}` : ingredient;
           ingredients.add(fullIngredient);
         }
       }
     });
-    
+
     return Array.from(ingredients).sort();
   };
 
