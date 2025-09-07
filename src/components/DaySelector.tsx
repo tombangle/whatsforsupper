@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
     position: 'relative',
-    zIndex: 2,
+    zIndex: 9999,
   },
   title: {
     fontSize: 24,

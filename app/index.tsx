@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScrollView,
   View,
@@ -26,7 +26,22 @@ export default function Index() {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // TEMP: clear old SW/caches on iPhone Safari so you aren’t running a stale build
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations?.().then(rs => rs.forEach(r => r.unregister()));
+      (async () => {
+        try {
+          const keys = await caches?.keys?.();
+          if (keys) for (const k of keys) await caches.delete(k);
+        } catch {}
+      })();
+    }
+  }, []);
+
   const handleDayToggle = (day: string) => {
+    // Debug log (optional): verify press fires on iPhone
+    // console.log('DAY PRESS', day);
     setSelectedDays(prev =>
       prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
     );
@@ -41,8 +56,6 @@ export default function Index() {
     setLoading(true);
     try {
       const fetchedMeals = await fetchMultipleRandomMeals(selectedDays.length, dietaryFilters);
-
-      // Ensure the meals array aligns 1:1 with selectedDays to avoid out-of-range indexing
       const alignedMeals = (fetchedMeals || []).slice(0, selectedDays.length);
       setMeals(alignedMeals);
 
@@ -66,18 +79,14 @@ export default function Index() {
       Alert.alert('No Meal Plan', 'Please generate a meal plan first before printing.');
       return;
     }
-
-    // Printing only supported on web (GitHub Pages). On native, window doesn't exist.
     if (Platform.OS !== 'web') {
       Alert.alert('Not available', 'Printing is only available on the web version.');
       return;
     }
 
-    // Build printable HTML with safe day fallback
     const printableMealsHtml = meals
       .map((meal, index) => {
         const day = (selectedDays[index] ?? `Day ${index + 1}`).toUpperCase();
-
         const ingredientsHtml = Array.from({ length: 20 }, (_, i) => i + 1)
           .map(i => {
             const ingredient = meal[`strIngredient${i}` as keyof Meal] as string | undefined;
@@ -156,19 +165,24 @@ export default function Index() {
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="always"   // keep taps active even with keyboard open
-      onScrollBeginDrag={Keyboard.dismiss} // dismiss keyboard when scrolling
+      keyboardShouldPersistTaps="always"
+      onScrollBeginDrag={Keyboard.dismiss}
+      contentContainerStyle={{ paddingBottom: 24 }}
     >
       <Header userName={userName} onNameChange={setUserName} />
 
-      <DaySelector selectedDays={selectedDays} onDayToggle={handleDayToggle} />
+      {/* Force DaySelector to the top layer while debugging */}
+      <View style={{ position: 'relative', zIndex: 9999 }}>
+        <DaySelector selectedDays={selectedDays} onDayToggle={handleDayToggle} />
+      </View>
 
       <DietaryFilters filters={dietaryFilters} onFiltersChange={setDietaryFilters} />
 
-      <View style={styles.generateSection}>
+      {/* Same for the Generate button section */}
+      <View style={[styles.generateSection, { position: 'relative', zIndex: 9999 }]}>
         <TouchableOpacity
           style={[styles.generateButton, loading && styles.disabledButton]}
-          onPress={generateMealPlan}
+          onPress={() => { /* console.log('GENERATE pressed'); */ generateMealPlan(); }}
           disabled={loading}
           activeOpacity={0.8}
         >
@@ -187,7 +201,7 @@ export default function Index() {
       </View>
 
       {meals.length > 0 && (
-        <View style={styles.mealPlanSection}>
+        <View style={[styles.mealPlanSection, { position: 'relative', zIndex: 2 }]}>
           <Text style={styles.sectionTitle}>
             {userName ? `${userName}'s Meal Plan` : 'Your Meal Plan'}
           </Text>
