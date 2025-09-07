@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, Platform, Keyboard } from 'react-native';
 
 interface HeaderProps {
   userName: string;
@@ -8,10 +8,18 @@ interface HeaderProps {
 
 export default function Header({ userName, onNameChange }: HeaderProps) {
   return (
-    <ImageBackground
-      source={{ uri: 'https://d64gsuwffb70l.cloudfront.net/68bcaf2f4442759ceb5d5a09_1757196119887_277fbf18.webp' }}
-      style={styles.heroContainer}
-    >
+    <View style={styles.heroContainer}>
+      {/* Non-interactive background layer */}
+      <View style={styles.bgWrap} pointerEvents="none">
+        <Image
+          source={{ uri: 'https://d64gsuwffb70l.cloudfront.net/68bcaf2f4442759ceb5d5a09_1757196119887_277fbf18.webp' }}
+          style={styles.bg}
+          resizeMode="cover"
+          accessible={false}
+        />
+      </View>
+
+      {/* Foreground content */}
       <View style={styles.overlay}>
         <Text style={styles.title}>Random Meal Planner</Text>
         <View style={styles.inputContainer}>
@@ -22,10 +30,13 @@ export default function Header({ userName, onNameChange }: HeaderProps) {
             placeholderTextColor="#999"
             value={userName}
             onChangeText={onNameChange}
+            returnKeyType="done"
+            blurOnSubmit
+            onSubmitEditing={Keyboard.dismiss}
           />
         </View>
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -34,18 +45,32 @@ const styles = StyleSheet.create({
     height: 250,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',   // keep bg contained so it can't overlap chips
+    marginBottom: 16,
+  },
+  bgWrap: {
+    ...StyleSheet.absoluteFillObject, // full-bleed layer
+  },
+  bg: {
+    width: '100%',
+    height: '100%',
   },
   overlay: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     padding: 30,
     borderRadius: 20,
     alignItems: 'center',
-    margin: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    marginHorizontal: 20,
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } as any)
+      : {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 8,
+        }),
   },
   title: {
     fontSize: 28,
