@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 interface DaySelectorProps {
   selectedDays: string[];
@@ -10,27 +10,28 @@ const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 
 export default function DaySelector({ selectedDays, onDayToggle }: DaySelectorProps) {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents="auto">
       <Text style={styles.title}>Select Days of the Week</Text>
       <View style={styles.daysGrid}>
-        {DAYS.map((day) => (
-          <TouchableOpacity
-            key={day}
-            style={[
-              styles.dayCard,
-              selectedDays.includes(day) && styles.selectedDay
-            ]}
-            onPress={() => onDayToggle(day)}
-            activeOpacity={0.8}
-          >
-            <Text style={[
-              styles.dayText,
-              selectedDays.includes(day) && styles.selectedDayText
-            ]}>
-              {day}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {DAYS.map((day) => {
+          const selected = selectedDays.includes(day);
+          return (
+            <Pressable
+              key={day}
+              onPress={() => onDayToggle(day)}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              style={({ pressed }) => [
+                styles.dayCard,
+                selected && styles.selectedDay,
+                pressed && styles.dayCardPressed,
+              ]}
+            >
+              <Text style={[styles.dayText, selected && styles.selectedDayText]}>{day}</Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 10,
+    // RN native doesn't fully support `gap`; use margins on children instead.
   },
   dayCard: {
     backgroundColor: '#f8f9fa',
@@ -63,11 +64,19 @@ const styles = StyleSheet.create({
     borderColor: '#e9ecef',
     minWidth: 120,
     alignItems: 'center',
+    margin: 5, // replaces `gap` for native
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    // @ts-ignore — helps avoid text selection on mobile Safari
+    userSelect: 'none',
+    // @ts-ignore — reduces gesture conflicts on iOS Safari
+    touchAction: 'manipulation',
+  },
+  dayCardPressed: {
+    opacity: 0.85,
   },
   selectedDay: {
     backgroundColor: '#FF6B35',
