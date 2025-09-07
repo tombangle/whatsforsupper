@@ -1,25 +1,32 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, Image, Platform, Keyboard } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, Image, Platform, Keyboard, StyleSheet as RNSS } from 'react-native';
 
 interface HeaderProps {
   userName: string;
   onNameChange: (name: string) => void;
 }
 
+const PRIMARY = 'https://d64gsuwffb70l.cloudfront.net/68bcaf2f4442759ceb5d5a09_1757196119887_277fbf18.webp';
+// Safe JPEG fallback to rule out format/CDN issues on iOS Safari
+const FALLBACK = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1600&auto=format&fit=crop';
+
 export default function Header({ userName, onNameChange }: HeaderProps) {
+  const [imgError, setImgError] = useState(false);
+
   return (
     <View style={styles.heroContainer}>
-      {/* Non-interactive background layer */}
+      {/* Non-interactive, full-bleed background layer */}
       <View style={styles.bgWrap} pointerEvents="none">
         <Image
-          source={{ uri: 'https://d64gsuwffb70l.cloudfront.net/68bcaf2f4442759ceb5d5a09_1757196119887_277fbf18.webp' }}
+          source={{ uri: imgError ? FALLBACK : PRIMARY }}
           style={styles.bg}
           resizeMode="cover"
+          onError={() => setImgError(true)}
           accessible={false}
         />
       </View>
 
-      {/* Foreground content */}
+      {/* Foreground card */}
       <View style={styles.overlay}>
         <Text style={styles.title}>Random Meal Planner</Text>
         <View style={styles.inputContainer}>
@@ -42,15 +49,16 @@ export default function Header({ userName, onNameChange }: HeaderProps) {
 
 const styles = StyleSheet.create({
   heroContainer: {
-    height: 250,
+    height: 260,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    overflow: 'hidden',   // keep bg contained so it can't overlap chips
+    overflow: 'hidden',
     marginBottom: 16,
+    zIndex: 0, // keep header in a lower stacking layer
   },
   bgWrap: {
-    ...StyleSheet.absoluteFillObject, // full-bleed layer
+    ...RNSS.absoluteFillObject,
   },
   bg: {
     width: '100%',

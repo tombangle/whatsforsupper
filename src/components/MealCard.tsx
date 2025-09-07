@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, Platform } from 'react-native';
 
 interface Meal {
   idMeal: string;
@@ -18,7 +18,7 @@ interface MealCardProps {
 
 export default function MealCard({ meal, day, onPress }: MealCardProps) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
+    <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]} onPress={onPress}>
       <View style={styles.dayBadge}>
         <Text style={styles.dayText}>{day}</Text>
       </View>
@@ -26,7 +26,7 @@ export default function MealCard({ meal, day, onPress }: MealCardProps) {
       <View style={styles.content}>
         <Text style={styles.mealName} numberOfLines={2}>{meal.strMeal}</Text>
         <View style={styles.tags}>
-          <View style={styles.tag}>
+          <View style={[styles.tag, { marginRight: 8 }]}>
             <Text style={styles.tagText}>{meal.strCategory}</Text>
           </View>
           <View style={styles.tag}>
@@ -34,7 +34,7 @@ export default function MealCard({ meal, day, onPress }: MealCardProps) {
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -44,13 +44,18 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginVertical: 8,
     marginHorizontal: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
     overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } as any)
+      : {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          elevation: 6,
+        }),
   },
+  cardPressed: { opacity: 0.9 },
   dayBadge: {
     position: 'absolute',
     top: 10,
@@ -71,9 +76,7 @@ const styles = StyleSheet.create({
     height: 200,
     resizeMode: 'cover',
   },
-  content: {
-    padding: 15,
-  },
+  content: { padding: 15 },
   mealName: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
   },
   tags: {
     flexDirection: 'row',
-    gap: 8,
+    // gap removed for native compatibility; we use marginRight on the first tag
   },
   tag: {
     backgroundColor: '#f8f9fa',
