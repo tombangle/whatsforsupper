@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 
 interface DaySelectorProps {
   selectedDays: string[];
@@ -10,7 +10,7 @@ const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 
 export default function DaySelector({ selectedDays, onDayToggle }: DaySelectorProps) {
   return (
-    <View style={styles.container} pointerEvents="auto">
+    <View style={styles.container}>
       <Text style={styles.title}>Select Days of the Week</Text>
       <View style={styles.daysGrid}>
         {DAYS.map((day) => {
@@ -53,7 +53,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    // RN native doesn't fully support `gap`; use margins on children instead.
   },
   dayCard: {
     backgroundColor: '#f8f9fa',
@@ -65,15 +64,21 @@ const styles = StyleSheet.create({
     minWidth: 120,
     alignItems: 'center',
     margin: 5, // replaces `gap` for native
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    // @ts-ignore — helps avoid text selection on mobile Safari
-    userSelect: 'none',
-    // @ts-ignore — reduces gesture conflicts on iOS Safari
-    touchAction: 'manipulation',
+
+    // Shadows: use proper boxShadow on web, legacy shadow props on native
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0px 2px 4px rgba(0,0,0,0.1)' } as any)
+      : {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }),
+
+    // RN Web helpers
+    userSelect: 'none' as any,        // avoid text selection on iOS Safari
+    touchAction: 'manipulation' as any, // reduce gesture conflicts on mobile Safari
   },
   dayCardPressed: {
     opacity: 0.85,

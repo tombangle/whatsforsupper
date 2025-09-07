@@ -7,7 +7,6 @@ import {
   Alert,
   ActivityIndicator,
   Keyboard,
-  TouchableWithoutFeedback,
   Platform,
 } from 'react-native';
 
@@ -146,7 +145,6 @@ export default function Index() {
     if (printWindow) {
       printWindow.document.write(html);
       printWindow.document.close();
-      // Give the new window a tick to finish layout before printing
       printWindow.focus();
       printWindow.print();
     } else {
@@ -155,62 +153,59 @@ export default function Index() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled" // critical for iOS taps when keyboard is open
-      >
-        <Header userName={userName} onNameChange={setUserName} />
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="always"   // keep taps active even with keyboard open
+      onScrollBeginDrag={Keyboard.dismiss} // dismiss keyboard when scrolling
+    >
+      <Header userName={userName} onNameChange={setUserName} />
 
-        <DaySelector selectedDays={selectedDays} onDayToggle={handleDayToggle} />
+      <DaySelector selectedDays={selectedDays} onDayToggle={handleDayToggle} />
 
-        <DietaryFilters filters={dietaryFilters} onFiltersChange={setDietaryFilters} />
+      <DietaryFilters filters={dietaryFilters} onFiltersChange={setDietaryFilters} />
 
-        <View style={styles.generateSection}>
-          <TouchableOpacity
-            style={[styles.generateButton, loading && styles.disabledButton]}
-            onPress={generateMealPlan}
-            disabled={loading}
-            activeOpacity={0.8}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text style={styles.generateButtonText}>Generate Meal Plan</Text>
-            )}
-          </TouchableOpacity>
-
-          {meals.length > 0 && Platform.OS === 'web' && (
-            <TouchableOpacity style={styles.printButton} onPress={printMealPlan} activeOpacity={0.8}>
-              <Text style={styles.printButtonText}>🖨️ Print Meal Plan</Text>
-            </TouchableOpacity>
+      <View style={styles.generateSection}>
+        <TouchableOpacity
+          style={[styles.generateButton, loading && styles.disabledButton]}
+          onPress={generateMealPlan}
+          disabled={loading}
+          activeOpacity={0.8}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.generateButtonText}>Generate Meal Plan</Text>
           )}
-        </View>
+        </TouchableOpacity>
 
-        {meals.length > 0 && (
-          <View style={styles.mealPlanSection}>
-            <Text style={styles.sectionTitle}>
-              {userName ? `${userName}'s Meal Plan` : 'Your Meal Plan'}
-            </Text>
-            {meals.map((meal, index) => {
-              const day = selectedDays[index] ?? `Day ${index + 1}`;
-              return (
-                <MealCard key={meal.idMeal} meal={meal} day={day} onPress={() => {}} />
-              );
-            })}
-          </View>
+        {meals.length > 0 && Platform.OS === 'web' && (
+          <TouchableOpacity style={styles.printButton} onPress={printMealPlan} activeOpacity={0.8}>
+            <Text style={styles.printButtonText}>🖨️ Print Meal Plan</Text>
+          </TouchableOpacity>
         )}
+      </View>
 
-        <ShoppingList meals={meals} />
-
-        <CookingInstructions meals={meals} selectedDays={selectedDays} />
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2025 Whats for Supper by BrightForge Labs</Text>
-          <Text style={styles.apiCredit}>Powered by TheMealDB</Text>
+      {meals.length > 0 && (
+        <View style={styles.mealPlanSection}>
+          <Text style={styles.sectionTitle}>
+            {userName ? `${userName}'s Meal Plan` : 'Your Meal Plan'}
+          </Text>
+          {meals.map((meal, index) => {
+            const day = selectedDays[index] ?? `Day ${index + 1}`;
+            return <MealCard key={meal.idMeal} meal={meal} day={day} onPress={() => {}} />;
+          })}
         </View>
-      </ScrollView>
-    </TouchableWithoutFeedback>
+      )}
+
+      <ShoppingList meals={meals} />
+
+      <CookingInstructions meals={meals} selectedDays={selectedDays} />
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>© 2025 Whats for Supper by BrightForge Labs</Text>
+        <Text style={styles.apiCredit}>Powered by TheMealDB</Text>
+      </View>
+    </ScrollView>
   );
 }
