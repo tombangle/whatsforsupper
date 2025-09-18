@@ -8,6 +8,7 @@
     "scheme": "meals-recipes-planner-2",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
+
     "ios": {
       "supportsTablet": true
     },
@@ -18,11 +19,13 @@
       },
       "edgeToEdgeEnabled": true
     },
+
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
       "expo-router",
       [
@@ -35,9 +38,11 @@
         }
       ]
     ],
+
     "experiments": {
-      "typedRoutes": true
+      "baseUrl": "/whatsforsupper"
     },
+
     "runtimeVersion": {
       "policy": "sdkVersion"
     }
