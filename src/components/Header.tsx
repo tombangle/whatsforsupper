@@ -28,12 +28,12 @@ export default function Header({ userName, onNameChange }: HeaderProps) {
 
       {/* Foreground card */}
       <View style={styles.overlay}>
-        <Text style={styles.title}>Random Meal Planner</Text>
+        <Text style={styles.title}>What's For Supper</Text>
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Enter Your Name</Text>
+          {/* <Text style={styles.inputLabel}>Enter Your Name</Text> */}
           <TextInput
             style={styles.input}
-            placeholder="Your Name"
+            placeholder="Enter Your Name"
             placeholderTextColor="#999"
             value={userName}
             onChangeText={onNameChange}
